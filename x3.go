@@ -73,6 +73,8 @@ func (app *application) fileHandler(w http.ResponseWriter, r *http.Request) {
 	u, err := url.ParseRequestURI(r.RequestURI)
 	if err != nil {
 		fmt.Println("Unable to parse url.")
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
 	}
 	fmt.Println("Serving " + app.config.path + u.Path)
 	// Serve a file from the default directory

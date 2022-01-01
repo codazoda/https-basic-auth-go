@@ -1,8 +1,6 @@
 package main
 
 import (
-	// This is dumb, use bcrypt
-
 	"fmt"
 	"io"
 	"net/http"

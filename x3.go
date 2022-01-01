@@ -1,14 +1,14 @@
 package main
 
 import (
-	"crypto/sha256"
-	"encoding/base64"
+	// This is dumb, use bcrypt
+
 	"fmt"
 	"io"
-	"math/rand"
 	"net/http"
 	"net/url"
-	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type application struct {
@@ -20,7 +20,7 @@ type application struct {
 	}
 	user struct {
 		name string
-		pass string
+		hash string
 	}
 }
 
@@ -34,7 +34,7 @@ func main() {
 	app.config.key = "localhost.key"
 	// Setup the user data
 	app.user.name = "admin"
-	app.user.pass = "A6xnQhbz4Vx2HuGl4lXwZ5U2I8iziLRFnhP5eNfIRvQ=" // 1234
+	app.user.hash = "$2a$14$A51GrX.lqVNioLKUVQSZoulowhdFq2mrFYmc/A4Um6CuUpwRREZlO" // 1234
 	// Setup some routes
 	http.HandleFunc("/", app.fileHandler)
 	http.HandleFunc("/hello", app.helloHandler)
@@ -52,19 +52,14 @@ func (app *application) auth(w http.ResponseWriter, r *http.Request) bool {
 	user, pass, ok := r.BasicAuth()
 	// If the header includes credentials
 	if ok {
-		// Base64 encode the recieved password
-		sum := sha256.Sum256([]byte(pass))
-		encodedPass := base64.StdEncoding.EncodeToString(sum[:])
-		// If the passed credentials are correct
-		if user == app.user.name && encodedPass == app.user.pass {
-			return true
+		// If the username is correct
+		if user == app.user.name {
+			// If the passwords match
+			if bcrypt.CompareHashAndPassword([]byte(app.user.hash), []byte(pass)) == nil {
+				return true
+			}
 		}
 	}
-	// Sleep for some random amount of time to prevent timed attacks
-	rand.Seed(time.Now().UnixNano())
-	wait := rand.Intn(2500)
-	fmt.Printf("Waiting %d milliseconds\n", wait)
-	time.Sleep(time.Duration(wait) * time.Millisecond)
 	// Set a header reporting unauthorized and requesting credentials
 	w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -100,7 +95,8 @@ func (app *application) helloHandler(w http.ResponseWriter, r *http.Request) {
 // An example of how to hash a password and store it
 func (app *application) hashHandler(w http.ResponseWriter, r *http.Request) {
 	pass := r.URL.Query().Get("pass")
-	sum := sha256.Sum256([]byte(pass))
+	bytes, _ := bcrypt.GenerateFromPassword([]byte(pass), 14)
+	hash := string(bytes)
 	w.Header().Add("content-type", "text/html")
-	io.WriteString(w, base64.StdEncoding.EncodeToString(sum[:]))
+	io.WriteString(w, hash)
 }

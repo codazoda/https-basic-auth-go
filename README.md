@@ -2,12 +2,28 @@
 
 This is a template for using HTTP Basic Auth in a Go application.
 
-Go has a built-in `BasicAuth()` method in the `net/http` module and I use that to authenticate the user. Because password hashing is so important, I'm using the bcrypt library for hasing in my template. Encryption is important with Basic Auth so we want to serve these requests over HTTPS. I've implemented TLS for this and you'll need to generate a certificate. Here are a couple commands you can run to generate your certificate files.
+## Getting Started
+
+To get started, run these commands.
 
 ```
+git clone git@github.com:codazoda/x3.git
 openssl req -new -newkey rsa:2048 -nodes -keyout localhost.key -out localhost.csr
 openssl x509 -req -days 365 -in localhost.csr -signkey localhost.key -out localhost.crt
+go build x3
+./x3
 ```
+
+What those commands do is...
+
+* Clone the repo
+* Generate a self-signed certificate
+* Build the binary
+* Run the binary
+
+## About
+
+Go has a built-in `BasicAuth()` method in the `net/http` module and I use that to authenticate the user. Because password hashing is so important, I'm using the bcrypt library for hasing in my template. Encryption is important with Basic Auth so we want to serve these requests over HTTPS. I've implemented TLS for this and that's why you need to generate a certificate.
 
 I use a struct to store the application data. It will contain the server port, the web path, and the cert and key filenames. Normally you might load the username and password from a database but I've put them in this struct to keep the code simple. The username is _admin_ and the password is _1234_ for this example.
 

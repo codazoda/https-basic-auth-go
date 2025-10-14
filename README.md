@@ -1,5 +1,7 @@
 # HTTP Basic Auth in Go
 
+> 💡 Enjoy this tool? Get my weekly developer notes → [joeldare.com/subscribe](https://joeldare.com/subscribe)
+
 This is a template for using HTTP Basic Auth in a Go application.
 
 ## Getting Started
